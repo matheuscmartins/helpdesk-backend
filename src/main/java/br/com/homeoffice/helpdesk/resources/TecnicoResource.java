@@ -1,14 +1,11 @@
 package br.com.homeoffice.helpdesk.resources;
 
-import br.com.homeoffice.helpdesk.domain.Tecnico;
 import br.com.homeoffice.helpdesk.domain.dtos.TecnicoDTO;
 import br.com.homeoffice.helpdesk.services.TecnicoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,14 +18,22 @@ public class TecnicoResource {
     private TecnicoService tecnicoService;
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<TecnicoDTO> findById(@PathVariable Integer id){
-        Tecnico obj = tecnicoService.findById(id);
-    return ResponseEntity.ok().body(new TecnicoDTO(obj));
+    public ResponseEntity<TecnicoDTO> findById(@PathVariable Integer id) {
+        return ResponseEntity.ok().body(new TecnicoDTO(tecnicoService.findById(id)));
     }
+
     @GetMapping
-    public ResponseEntity<List<TecnicoDTO>> findAll(){
-        List<Tecnico> tecnicoList = tecnicoService.findAll();
-        return ResponseEntity.ok().body(tecnicoList.stream().map(obj -> new TecnicoDTO(obj))
+    public ResponseEntity<List<TecnicoDTO>> findAll() {
+        return ResponseEntity.ok().body(tecnicoService.findAll().stream().map(obj -> new TecnicoDTO(obj))
                 .collect(Collectors.toList()));
+    }
+
+    @PostMapping
+    public ResponseEntity<TecnicoDTO> create(@RequestBody TecnicoDTO tecnicoDTO) {
+        return
+                ResponseEntity.created(
+                        ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                                .buildAndExpand(tecnicoService.create(tecnicoDTO).getId()).toUri()
+                ).build();
     }
 }
