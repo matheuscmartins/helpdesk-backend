@@ -9,6 +9,7 @@ import br.com.homeoffice.helpdesk.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +34,13 @@ public class TecnicoService {
         validaPorCpfEmail(tecnicoDTO);
         return tecnicoRepository.save(new Tecnico(tecnicoDTO));
     }
-
+    public Tecnico update(Integer id, @Valid TecnicoDTO tecnicoDTO) {
+        tecnicoDTO.setId(id);
+        Tecnico oldObj = findById(id);
+        validaPorCpfEmail(tecnicoDTO);
+        oldObj = new Tecnico(tecnicoDTO);
+        return tecnicoRepository.save(oldObj);
+    }
     private void validaPorCpfEmail(TecnicoDTO tecnicoDTO) {
         if (pessoaRepository.findByCpf(tecnicoDTO.getCpf()).isPresent() &&
                 pessoaRepository.findByCpf(tecnicoDTO.getCpf()).get().getId() != tecnicoDTO.getId()) {

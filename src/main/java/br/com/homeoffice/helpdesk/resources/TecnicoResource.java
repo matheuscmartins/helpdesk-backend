@@ -37,4 +37,8 @@ public class TecnicoResource {
                                 .buildAndExpand(tecnicoService.create(tecnicoDTO).getId()).toUri()
                 ).build();
     }
+    @PutMapping(value = "/{id}")
+    public  ResponseEntity<TecnicoDTO> update (@PathVariable Integer id, @Valid @RequestBody TecnicoDTO tecnicoDTO){
+        return ResponseEntity.ok().body(new TecnicoDTO(tecnicoService.update(id, tecnicoDTO)));
+    }
 }
