@@ -34,6 +34,7 @@ public class ClienteService {
         validaPorCpfEmail(clienteDTO);
         return clienteRepository.save(new Cliente(clienteDTO));
     }
+
     public Cliente update(Integer id, @Valid ClienteDTO clienteDTO) {
         clienteDTO.setId(id);
         Cliente oldObj = findById(id);
@@ -41,13 +42,15 @@ public class ClienteService {
         oldObj = new Cliente(clienteDTO);
         return clienteRepository.save(oldObj);
     }
+
     public void delete(Integer id) {
         Cliente obj = findById(id);
-        if (obj.getChamados().size() > 0 ){
+        if (obj.getChamados().size() > 0) {
             throw new DataIntegrityViolationException("O Cliente possui ordens de serviço e não pode ser deletado!");
         }
-            clienteRepository.deleteById(id);
+        clienteRepository.deleteById(id);
     }
+
     private void validaPorCpfEmail(ClienteDTO clienteDTO) {
         if (pessoaRepository.findByCpf(clienteDTO.getCpf()).isPresent() &&
                 pessoaRepository.findByCpf(clienteDTO.getCpf()).get().getId() != clienteDTO.getId()) {
