@@ -39,4 +39,9 @@ public class ChamadoResource {
                                 .buildAndExpand(chamadoService.create(chamadoDTO).getId()).toUri()
                 ).build();
     }
+
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<ChamadoDTO> update(@PathVariable Integer id, @Valid @RequestBody ChamadoDTO chamadoDTO) {
+        return ResponseEntity.ok().body(new ChamadoDTO(chamadoService.update(id, chamadoDTO)));
+    }
 }
