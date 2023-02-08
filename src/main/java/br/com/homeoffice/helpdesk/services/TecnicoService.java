@@ -7,6 +7,7 @@ import br.com.homeoffice.helpdesk.repositories.TecnicoRepository;
 import br.com.homeoffice.helpdesk.services.exceptions.DataIntegrityViolationException;
 import br.com.homeoffice.helpdesk.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
@@ -19,6 +20,8 @@ public class TecnicoService {
     private TecnicoRepository tecnicoRepository;
     @Autowired
     private PessoaRepository pessoaRepository;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public Tecnico findById(Integer id) {
         Optional<Tecnico> obj = tecnicoRepository.findById(id);
@@ -31,6 +34,7 @@ public class TecnicoService {
 
     public Tecnico create(TecnicoDTO tecnicoDTO) {
         tecnicoDTO.setId(null);
+        tecnicoDTO.setSenha(bCryptPasswordEncoder.encode(tecnicoDTO.getSenha()));
         validaPorCpfEmail(tecnicoDTO);
         return tecnicoRepository.save(new Tecnico(tecnicoDTO));
     }
