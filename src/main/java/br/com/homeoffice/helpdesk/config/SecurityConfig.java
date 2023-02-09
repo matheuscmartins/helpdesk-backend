@@ -1,6 +1,7 @@
 package br.com.homeoffice.helpdesk.config;
 
 import br.com.homeoffice.helpdesk.security.JWTAuthenticationFilter;
+import br.com.homeoffice.helpdesk.security.JWTAuthorizationFilter;
 import br.com.homeoffice.helpdesk.security.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -19,15 +20,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private static final String[] PUBLIC_MATCHERS = { "/h2-console/**" };
+    private static final String[] PUBLIC_MATCHERS = {"/h2-console/**"};
 
     @Autowired
-    private Environment environment; //usado para obter perfis e propriedades do ambiente do app
+    private Environment env;
     @Autowired
     private JWTUtil jwtUtil;
     @Autowired
@@ -35,16 +35,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        if(Arrays.asList(environment.getActiveProfiles()).contains(("test"))){
-            http.headers().frameOptions().disable(); //se for perfil test desabilita o frameoptions
+        if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
+            http.headers().frameOptions().disable();
         }
+
         http.cors().and().csrf().disable();
         http.addFilter(new JWTAuthenticationFilter(authenticationManager(), jwtUtil));
-        http.authorizeRequests().antMatchers(PUBLIC_MATCHERS).permitAll().anyRequest().authenticated(); //liberarar h2
+        http.addFilter(new JWTAuthorizationFilter(authenticationManager(), jwtUtil, userDetailsService));
+        http.authorizeRequests().antMatchers(PUBLIC_MATCHERS).permitAll().anyRequest().authenticated();
+
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
+
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception{
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
     }
 
@@ -56,8 +60,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder(){
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }

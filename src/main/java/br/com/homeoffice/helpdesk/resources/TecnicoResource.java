@@ -1,13 +1,16 @@
 package br.com.homeoffice.helpdesk.resources;
 
+import br.com.homeoffice.helpdesk.domain.Tecnico;
 import br.com.homeoffice.helpdesk.domain.dtos.TecnicoDTO;
 import br.com.homeoffice.helpdesk.services.TecnicoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,34 +19,41 @@ import java.util.stream.Collectors;
 public class TecnicoResource {
 
     @Autowired
-    private TecnicoService tecnicoService;
+    private TecnicoService service;
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<TecnicoDTO> findById(@PathVariable Integer id) {
-        return ResponseEntity.ok().body(new TecnicoDTO(tecnicoService.findById(id)));
+        Tecnico obj = service.findById(id);
+        return ResponseEntity.ok().body(new TecnicoDTO(obj));
     }
 
     @GetMapping
     public ResponseEntity<List<TecnicoDTO>> findAll() {
-        return ResponseEntity.ok().body(tecnicoService.findAll().stream().map(obj -> new TecnicoDTO(obj))
-                .collect(Collectors.toList()));
+        List<Tecnico> list = service.findAll();
+        List<TecnicoDTO> listDTO = list.stream().map(obj -> new TecnicoDTO(obj)).collect(Collectors.toList());
+        return ResponseEntity.ok().body(listDTO);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<TecnicoDTO> create(@Valid @RequestBody TecnicoDTO tecnicoDTO) {
-        return
-                ResponseEntity.created(
-                        ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                                .buildAndExpand(tecnicoService.create(tecnicoDTO).getId()).toUri()
-                ).build();
+    public ResponseEntity<TecnicoDTO> create(@Valid @RequestBody TecnicoDTO objDTO) {
+        Tecnico newObj = service.create(objDTO);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newObj.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PutMapping(value = "/{id}")
-    public  ResponseEntity<TecnicoDTO> update (@PathVariable Integer id, @Valid @RequestBody TecnicoDTO tecnicoDTO){
-        return ResponseEntity.ok().body(new TecnicoDTO(tecnicoService.update(id, tecnicoDTO)));
+    public ResponseEntity<TecnicoDTO> update(@PathVariable Integer id, @Valid @RequestBody TecnicoDTO objDTO) {
+        Tecnico obj = service.update(id, objDTO);
+        return ResponseEntity.ok().body(new TecnicoDTO(obj));
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<TecnicoDTO> delete(@PathVariable Integer id){
-        tecnicoService.delete(id);
+    public ResponseEntity<TecnicoDTO> delete(@PathVariable Integer id) {
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }
