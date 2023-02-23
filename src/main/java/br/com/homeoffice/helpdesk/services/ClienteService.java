@@ -42,6 +42,11 @@ public class ClienteService {
     public Cliente update(Integer id, @Valid ClienteDTO clienteDTO) {
         clienteDTO.setId(id);
         Cliente oldObj = findById(id);
+
+        if(!clienteDTO.getSenha().equals(oldObj.getSenha())){
+            clienteDTO.setSenha(bCryptPasswordEncoder.encode(clienteDTO.getSenha()));
+        }
+
         validaPorCpfEmail(clienteDTO);
         oldObj = new Cliente(clienteDTO);
         return clienteRepository.save(oldObj);
